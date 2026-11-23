@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d16" />
+  <title>AgentHub B2B</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(74px + env(safe-area-inset-bottom));
+      overflow-x: hidden;
+    }
+    .glass-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+    }
+    .nav-active {
+      color: #38bdf8;
+    }
+    .nav-active svg {
+      stroke: #38bdf8;
+    }
+    textarea, input, select {
+      font-size: 16px !important; /* Evita zoom automatico no Android WebView */
+    }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-[#090d16]/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20">
+        A
+      </div>
+      <div>
+        <h1 class="text-base font-bold leading-tight text-white">AgentHub <span class="text-sky-400">B2B</span></h1>
+        <p class="text-[11px] text-slate-400 leading-none">Estúdio de Micro-Agentes</p>
+      </div>
+    </div>
+    <button onclick="openApiModal()" id="apiBadge" class="text-xs px-2.5 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 flex items-center gap-1.5 active:scale-95 transition">
+      <span id="apiDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+      <span>API Key</span>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="px-4 py-4 max-w-2xl mx-auto space-y-4">
+
+    <!-- TAB 1: DASHBOARD & MRR -->
+    <section id="tab-dashboard" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="glass-card rounded-xl p-3.5">
+          <p class="text-xs text-slate-400">Receita Mensal (MRR)</p>
+          <p id="kpi-mrr" class="text-xl font-bold text-emerald-400 mt-1">R$ 0,00</p>
+          <p class="text-[11px] text-slate-500 mt-1">Recorrência ativa</p>
+        </div>
+        <div class="glass-card rounded-xl p-3.5">
+          <p class="text-xs text-slate-400">Clientes Ativos</p>
+          <p id="kpi-clients" class="text-xl font-bold text-sky-400 mt-1">0</p>
+          <p id="kpi-setup" class="text-[11px] text-slate-500 mt-1">Setup: R$ 0,00</p>
+        </div>
+      </div>
+
+      <!-- ADD CLIENT QUICK FORM -->
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white">Novo Contrato / Cliente</h2>
+          <span class="text-[11px] text-sky-400">Carteira B2B</span>
+        </div>
+        <div class="space-y-2.5">
+          <input id="cli-name" type="text" placeholder="Nome da empresa (ex: Marcenaria Silva)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none" />
+          <div class="grid grid-cols-2 gap-2">
+            <select id="cli-agent" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm text-white focus:border-sky-500 focus:outline-none">
+              <option value="Orçamentista WhatsApp">Orçamentista IA</option>
+              <option value="Relatório Produção">Relatório Produção</option>
+              <option value="Leitor Editais B2B">Leitor Cotações</option>
+            </select>
+            <input id="cli-mrr" type="number" placeholder="Mensalidade (R$)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none" />
+          </div>
+          <button onclick="addClient()" class="w-full bg-sky-600 hover:bg-sky-500 active:scale-[0.99] text-white font-medium text-sm py-2.5 rounded-lg transition">
+            + Adicionar à Carteira
+          </button>
+        </div>
+      </div>
+
+      <!-- CLIENT LIST -->
+      <div class="space-y-2">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">Clientes Cadastrados</h3>
+        <div id="client-list" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ORCAMENTISTA EXPRESS -->
+    <section id="tab-orcamento" class="hidden space-y-4">
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <div>
+          <h2 class="text-base font-bold text-white">Orçamentista Express (IA)</h2>
+          <p class="text-xs text-slate-400">Calcula matéria-prima, perda técnica, margem e gera mensagem pronta para WhatsApp.</p>
+        </div>
+
+        <div class="space-y-2.5">
+          <div>
+            <label class="text-xs text-slate-400">Segmento / Peça</label>
+            <input id="orc-item" type="text" value="Lote 250 puxadores Zamac Z5 + Banho Cromo" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-xs text-slate-400">Custo Base (R$)</label>
+              <input id="orc-custo" type="number" value="1450" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm text-white" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Perda (%)</label>
+              <input id="orc-perda" type="number" value="8" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm text-white" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Margem (%)</label>
+              <input id="orc-margem" type="number" value="35" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-sm text-white" />
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400">Observações do Pedido</label>
+            <textarea id="orc-obs" rows="2" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" placeholder="Prazo de entrega, acabamento, frete...">Prazo 7 dias úteis. Acabamento escovado com verniz.</textarea>
+          </div>
+          <button onclick="runOrcamentoAgent()" id="btn-orc" class="w-full bg-emerald-600 active:scale-[0.99] text-white font-semibold text-sm py-2.5 rounded-lg transition">
+            Gerar Orçamento + Texto WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <div id="orc-output-box" class="hidden glass-card rounded-xl p-4 space-y-3 border-emerald-500/30">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-emerald-400">Resultado do Agente</span>
+          <button onclick="shareWhatsApp('orc-result')" class="text-xs bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-md">
+            Enviar WhatsApp
+          </button>
+        </div>
+        <pre id="orc-result" class="whitespace-pre-wrap text-xs text-slate-200 font-sans leading-relaxed bg-slate-950/70 p-3 rounded-lg border border-slate-800"></pre>
+      </div>
+    </section>
+
+    <!-- TAB 3: PRODUCAO & RETRABALHO -->
+    <section id="tab-producao" class="hidden space-y-4">
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <div>
+          <h2 class="text-base font-bold text-white">Analisador de Produção & Retrabalho</h2>
+          <p class="text-xs text-slate-400">Transforme apontamentos soltos de turno em relatório técnico gerencial.</p>
+        </div>
+
+        <textarea id="prod-input" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" placeholder="Cole os dados brutos do turno...">Turno A - Injetora 02: 1.200 peças produzidas, 48 rejeitadas por bolha/porosidade (4%). Parada de 35 min para troca de molde. Operador: Carlos.</textarea>
+
+        <button onclick="runProducaoAgent()" id="btn-prod" class="w-full bg-sky-600 active:scale-[0.99] text-white font-semibold text-sm py-2.5 rounded-lg transition">
+          Processar Relatório de Turno
+        </button>
+      </div>
+
+      <div id="prod-output-box" class="hidden glass-card rounded-xl p-4 space-y-3 border-sky-500/30">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-sky-400">Relatório Gerencial</span>
+          <button onclick="shareWhatsApp('prod-result')" class="text-xs bg-sky-600/20 text-sky-300 border border-sky-500/30 px-2.5 py-1 rounded-md">
+            Compartilhar
+          </button>
+        </div>
+        <pre id="prod-result" class="whitespace-pre-wrap text-xs text-slate-200 font-sans leading-relaxed bg-slate-950/70 p-3 rounded-lg border border-slate-800"></pre>
+      </div>
+    </section>
+
+    <!-- TAB 4: PROPOSTA COMERCIAL (VENDER AGENTE) -->
+    <section id="tab-proposta" class="hidden space-y-4">
+      <div class="glass-card rounded-xl p-4 space-y-3">
+        <div>
+          <h2 class="text-base font-bold text-white">Vender Agente (Proposta B2B)</h2>
+          <p class="text-xs text-slate-400">Gere um pitch comercial pronto para fechar implantação + mensalidade.</p>
+        </div>
+
+        <div class="space-y-2.5">
+          <input id="prop-empresa" type="text" placeholder="Empresa prospectada (ex: Metalúrgica Vale)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          <input id="prop-dor" type="text" placeholder="Problema atual (ex: demora 1 dia para passar orçamento)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          <div class="grid grid-cols-2 gap-2">
+            <input id="prop-setup" type="number" value="800" placeholder="Setup (R$)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+            <input id="prop-mensal" type="number" value="250" placeholder="Mensal (R$)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white" />
+          </div>
+          <button onclick="runPropostaAgent()" id="btn-prop" class="w-full bg-indigo-600 active:scale-[0.99] text-white font-semibold text-sm py-2.5 rounded-lg transition">
+            Gerar Proposta Comercial
+          </button>
+        </div>
+      </div>
+
+      <div id="prop-output-box" class="hidden glass-card rounded-xl p-4 space-y-3 border-indigo-500/30">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-indigo-400">Pitch de Venda</span>
+          <button onclick="shareWhatsApp('prop-result')" class="text-xs bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-md">
+            Enviar no WhatsApp
+          </button>
+        </div>
+        <pre id="prop-result" class="whitespace-pre-wrap text-xs text-slate-200 font-sans leading-relaxed bg-slate-950/70 p-3 rounded-lg border border-slate-800"></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR (NATIVE MOBILE STYLE) -->
+  <nav class="fixed bottom-0 inset-x-0 z-30 bg-[#0d1320]/95 backdrop-blur border-t border-slate-800 pb-[env(safe-area-inset-bottom)]">
+    <div class="grid grid-cols-4 h-16 max-w-2xl mx-auto">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-active flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-slate-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>Painel</span>
+      </button>
+      <button onclick="switchTab('orcamento')" id="nav-orcamento" class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-slate-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <span>Orçar</span>
+      </button>
+      <button onclick="switchTab('producao')" id="nav-producao" class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-slate-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span>Produção</span>
+      </button>
+      <button onclick="switchTab('proposta')" id="nav-proposta" class="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-slate-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Vender</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- API KEY MODAL -->
+  <div id="api-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card rounded-2xl p-5 w-full max-w-sm space-y-4">
+      <div>
+        <h3 class="text-base font-bold text-white">Configurar Chave Gemini API</h3>
+        <p class="text-xs text-slate-400 mt-1">Sua chave fica salva localmente no aparelho. Sem chave, o app usa o modo de cálculo inteligente offline.</p>
+      </div>
+      <input id="api-key-input" type="password" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:border-sky-500 focus:outline-none" />
+      <div class="flex gap-2">
+        <button onclick="closeApiModal()" class="flex-1 bg-slate-800 text-slate-300 text-sm py-2 rounded-lg">Cancelar</button>
+        <button onclick="saveApiKey()" class="flex-1 bg-sky-600 text-white font-semibold text-sm py-2 rounded-lg">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // STATE & STORAGE
+    const STORAGE_CLIENTS = 'agenthub_clients_v1';
+    const STORAGE_KEY = 'agenthub_gemini_key';
+
+    let clients = JSON.parse(localStorage.getItem(STORAGE_CLIENTS) || 'null') || [
+      { id: 1, name: 'Marcenaria Sob Medida RS', agent: 'Orçamentista WhatsApp', mrr: 250 },
+      { id: 2, name: 'Fundição & Zamac Sinos', agent: 'Relatório Produção', mrr: 350 }
+    ];
+
+    function init() {
+      renderClients();
+      updateApiBadge();
+    }
+
+    function updateApiBadge() {
+      const key = localStorage.getItem(STORAGE_KEY);
+      const dot = document.getElementById('apiDot');
+      if (key && key.trim().length > 10) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      }
+    }
+
+    function openApiModal() {
+      document.getElementById('api-key-input').value = localStorage.getItem(STORAGE_KEY) || '';
+      document.getElementById('api-modal').classList.remove('hidden');
+    }
+
+    function closeApiModal() {
+      document.getElementById('api-modal').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('api-key-input').value.trim();
+      localStorage.setItem(STORAGE_KEY, val);
+      updateApiBadge();
+      closeApiModal();
+    }
+
+    function switchTab(tab) {
+      ['dashboard', 'orcamento', 'producao', 'proposta'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('nav-' + t).classList.remove('nav-active');
+      });
+      document.getElementById('tab-' + tab).classList.remove('hidden');
+      document.getElementById('nav-' + tab).classList.add('nav-active');
+    }
+
+    function renderClients() {
+      const list = document.getElementById('client-list');
+      list.innerHTML = '';
+      let totalMrr = 0;
+
+      clients.forEach(c => {
+        totalMrr += Number(c.mrr || 0);
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-xl p-3.5 flex items-center justify-between';
+        card.innerHTML = `
+          <div>
+            <p class="text-sm font-semibold text-white">${c.name}</p>
+            <p class="text-xs text-slate-400">${c.agent}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-bold text-emerald-400">R$ ${Number(c.mrr).toFixed(2)}</span>
+            <button onclick="removeClient(${c.id})" class="text-xs text-slate-500 hover:text-rose-400 px-1.5 py-1">✕</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      document.getElementById('kpi-mrr').textContent = `R$ ${totalMrr.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+      document.getElementById('kpi-clients').textContent = clients.length;
+      document.getElementById('kpi-setup').textContent = `Projeção Anual: R$ ${(totalMrr * 12).toLocaleString('pt-BR')}`;
+      localStorage.setItem(STORAGE_CLIENTS, JSON.stringify(clients));
+    }
+
+    function addClient() {
+      const name = document.getElementById('cli-name').value.trim();
+      const agent = document.getElementById('cli-agent').value;
+      const mrr = parseFloat(document.getElementById('cli-mrr').value);
+      if (!name || isNaN(mrr)) return alert('Preencha o nome da empresa e o valor mensal.');
+      clients.unshift({ id: Date.now(), name, agent, mrr });
+      document.getElementById('cli-name').value = '';
+      document.getElementById('cli-mrr').value = '';
+      renderClients();
+    }
+
+    function removeClient(id) {
+      clients = clients.filter(c => c.id !== id);
+      renderClients();
+    }
+
+    // GEMINI API HELPER WITH OFFLINE FALLBACK
+    async function callGemini(prompt, fallbackFn) {
+      const apiKey = localStorage.getItem(STORAGE_KEY);
+      if (!apiKey || apiKey.trim().length < 10) {
+        return fallbackFn();
+      }
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+        const data = await res.json();
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          return data.candidates[0].content.parts[0].text;
+        }
+        return fallbackFn();
+      } catch (e) {
+        return fallbackFn();
+      }
+    }
+
+    async function runOrcamentoAgent() {
+      const btn = document.getElementById('btn-orc');
+      btn.textContent = 'Calculando com IA...';
+      btn.disabled = true;
+
+      const item = document.getElementById('orc-item').value;
+      const custo = parseFloat(document.getElementById('orc-custo').value) || 0;
+      const perda = parseFloat(document.getElementById('orc-perda').value) || 0;
+      const margem = parseFloat(document.getElementById('orc-margem').value) || 0;
+      const obs = document.getElementById('orc-obs').value;
+
+      const custoReal = custo * (1 + perda / 100);
+      const precoFinal = custoReal / (1 - margem / 100);
+
+      const fallback = () => `📊 MEMÓRIA DE CÁLCULO INTERNA
+• Item: ${item}
+• Custo Base: R$ ${custo.toFixed(2)}
+• Perda Técnica (${perda}%): +R$ ${(custoReal - custo).toFixed(2)}
+• Custo Real Produzido: R$ ${custoReal.toFixed(2)}
+• Preço de Venda (${margem}% margem): R$ ${precoFinal.toFixed(2)}
+
+📲 MENSAGEM PRONTA PARA WHATSAPP:
+Olá! Segue a proposta comercial para *${item}*:
+
+✅ *Valor Total:* R$ ${precoFinal.toFixed(2)}
+📌 *Detalhes:* ${obs}
+⏳ *Validade da proposta:* 5 dias úteis.
+
+Podemos confirmar o pedido para reservar a programação na produção?`;
+
+      const prompt = `Você é um orçamentista industrial especialista. Calcule e formate de forma objetiva (sem markdown complexo, ideal para WhatsApp) um orçamento para: Item="${item}", Custo Base=R$${custo}, Perda=${perda}%, Margem=${margem}%, Obs="${obs}". Custo Real=R$${custoReal.toFixed(2)}, Preço Final=R$${precoFinal.toFixed(2)}. Separe em: 1) Resumo de Custos Interno e 2) Mensagem pronta para enviar ao cliente no WhatsApp.`;
+
+      const result = await callGemini(prompt, fallback);
+      document.getElementById('orc-result').textContent = result;
+      document.getElementById('orc-output-box').classList.remove('hidden');
+      btn.textContent = 'Gerar Orçamento + Texto WhatsApp';
+      btn.disabled = false;
+    }
+
+    async function runProducaoAgent() {
+      const btn = document.getElementById('btn-prod');
+      btn.textContent = 'Analisando turno...';
+      btn.disabled = true;
+
+      const raw = document.getElementById('prod-input').value;
+      const fallback = () => `🏭 RELATÓRIO DE PRODUÇÃO E RETRABALHO
+• Apontamento analisado: ${raw}
+• Status de Refugo: Atenção para controle de temperatura/injeção e setup de molde.
+• Ação Recomendada: Revisar parâmetros antes da próxima partida e registrar lote de matéria-prima para rastreabilidade.`;
+
+      const prompt = `Você é um supervisor de produção industrial. Transforme este apontamento bruto de turno em um relatório técnico claro e direto com: Indicadores, Causa Provável de Retrabalho e Ação Corretiva. Dados: "${raw}"`;
+
+      const result = await callGemini(prompt, fallback);
+      document.getElementById('prod-result').textContent = result;
+      document.getElementById('prod-output-box').classList.remove('hidden');
+      btn.textContent = 'Processar Relatório de Turno';
+      btn.disabled = false;
+    }
+
+    async function runPropostaAgent() {
+      const btn = document.getElementById('btn-prop');
+      btn.textContent = 'Gerando proposta...';
+      btn.disabled = true;
+
+      const empresa = document.getElementById('prop-empresa').value || 'sua empresa';
+      const dor = document.getElementById('prop-dor').value || 'agilizar orçamentos e relatórios';
+      const setup = document.getElementById('prop-setup').value || '800';
+      const mensal = document.getElementById('prop-mensal').value || '250';
+
+      const fallback = () => `🚀 PROPOSTA DE AUTOMAÇÃO COM IA — ${empresa.toUpperCase()}
+
+Olá! Vi que vocês podem ganhar muito tempo resolvendo a questão de ${dor}.
+
+Desenvolvi um Micro-Agente de IA sob medida que automatiza esse processo direto no celular/WhatsApp da equipe, eliminando erros de cálculo e retrabalho.
+
+💰 INVESTIMENTO:
+• Implantação e Treinamento: R$ ${setup},00 (pagamento único)
+• Suporte, Hospedagem e Atualizações: R$ ${mensal},00/mês
+
+Posso te mostrar uma demonstração funcionando em 5 minutos hoje?`;
+
+      const prompt = `Crie uma proposta comercial curta, persuasiva e direta para WhatsApp vendendo um agente de IA sob medida para a empresa "${empresa}". Dor do cliente: "${dor}". Valor de implantação: R$${setup}. Mensalidade: R$${mensal}.`;
+
+      const result = await callGemini(prompt, fallback);
+      document.getElementById('prop-result').textContent = result;
+      document.getElementById('prop-output-box').classList.remove('hidden');
+      btn.textContent = 'Gerar Proposta Comercial';
+      btn.disabled = false;
+    }
+
+    function shareWhatsApp(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+
+    init();
+  </script>
+</body>
+</html>

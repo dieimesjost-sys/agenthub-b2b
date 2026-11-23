@@ -1,0 +1,13 @@
+{
+  "appId": "com.dieimesjost.agenthub",
+  "appName": "AgentHub B2B",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "backgroundColor": "#090d16",
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

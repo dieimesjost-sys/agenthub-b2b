@@ -1,0 +1,16 @@
+{
+  "name": "agenthub-b2b",
+  "version": "1.0.0",
+  "description": "AgentHub B2B - Plataforma de Micro-Agentes de IA para Vendas e Producao",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Static build ready'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
