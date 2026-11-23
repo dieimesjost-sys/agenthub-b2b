@@ -1,7 +1,7 @@
 {
   "name": "agenthub-b2b",
-  "version": "1.0.0",
-  "description": "AgentHub B2B - Plataforma de Micro-Agentes de IA para Vendas e Producao",
+  "version": "1.1.0",
+  "description": "AgentHub B2B - Plataforma Completa de Micro-Agentes de IA",
   "main": "index.js",
   "scripts": {
     "build": "echo 'Static build ready'"
